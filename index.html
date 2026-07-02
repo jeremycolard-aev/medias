@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aix en Vue - Stockage Vidéo et Photo</title>
+  <meta name="description" content="Application de stockage de photos et de vidéos pour l'association Aix en Vue.">
+  
+  <!-- Font Manrope from Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- PWA Manifest & Meta -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#e20613">
+  <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+  <!-- Accessibility Skip Link -->
+  <a href="#main-content" class="skip-link">Passer au contenu principal</a>
+
+  <div class="app-container">
+    <header>
+      <h1>Aix en Vue</h1>
+      <p class="lead">Espace de téléversement et de stockage des photos et vidéos. Choisissez plusieurs fichiers et importez-les en quelques clics.</p>
+    </header>
+
+    <main id="main-content">
+      
+      <!-- API Configuration Banner (shows when App Script URL is not set) -->
+      <section id="api-config-banner" class="api-config-banner" style="display: none;" aria-live="polite">
+        <h2>Configuration requise</h2>
+        <p>Veuillez renseigner l'adresse (URL d'exécution) de votre Web App Google Apps Script pour connecter l'application au stockage Google Drive.</p>
+        <div class="api-config-input-group">
+          <div style="flex-grow: 1;">
+            <label id="url-label" for="api-url-input">URL de la Web App Apps Script (se terminant par /exec) :</label>
+            <input type="url" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec" aria-labelledby="url-label">
+          </div>
+          <button id="save-api-url-btn" class="btn btn-primary" style="align-self: flex-end;">Enregistrer</button>
+        </div>
+      </section>
+
+      <!-- Connection / Status Indicator -->
+      <div id="connection-status" style="margin-bottom: 24px; display: none;" aria-live="polite">
+        <span class="media-type-badge" style="position: static; display: inline-flex; background-color: var(--color-gold);">
+          ⚠️ Connexion à Google Drive en cours...
+        </span>
+      </div>
+
+      <!-- Upload Section -->
+      <section class="upload-section" aria-labelledby="upload-heading">
+        <h2 id="upload-heading" class="sr-only">Importer de nouveaux médias</h2>
+        
+        <div class="dropzone-container" id="dropzone">
+          <label for="file-picker" class="dropzone-label">
+            <span class="dropzone-icon" aria-hidden="true">📤</span>
+            <span class="dropzone-text">Sélectionner ou Glisser des photos / vidéos</span>
+            <span class="dropzone-subtext">Vous pouvez sélectionner plusieurs fichiers d'un coup (depuis votre téléphone ou ordinateur)</span>
+            <span class="btn btn-primary" aria-hidden="true">Choisir des fichiers</span>
+          </label>
+          <input type="file" id="file-picker" class="file-input" multiple accept="image/*,video/*" aria-label="Choisir les fichiers photos et vidéos à importer">
+        </div>
+      </section>
+
+      <!-- Upload Queue Section (Hidden by default, shown when files upload) -->
+      <section id="upload-queue-section" class="upload-queue-section" style="display: none;" aria-labelledby="queue-heading">
+        <h2 id="queue-heading" class="upload-queue-title">
+          <span class="spinner" aria-hidden="true"></span>
+          <span>Importation en cours...</span>
+        </h2>
+        <div class="upload-grid" id="upload-queue-grid">
+          <!-- Dynamically inserted upload items -->
+        </div>
+      </section>
+
+      <!-- Gallery Section -->
+      <section class="gallery-section" aria-labelledby="gallery-heading">
+        <div class="gallery-header">
+          <div class="gallery-title-group">
+            <h2 id="gallery-heading">Médiathèque</h2>
+            <p style="margin-bottom: 0;">Liste des médias enregistrés, triés par date décroissante.</p>
+          </div>
+          <button id="refresh-gallery-btn" class="btn btn-secondary" style="min-height: 48px; padding: 8px 16px;">
+            🔄 Actualiser la liste
+          </button>
+        </div>
+
+        <!-- Settings toggle to allow changing API url later -->
+        <div style="margin-bottom: 24px; text-align: right;">
+          <button id="edit-settings-btn" class="btn btn-secondary" style="min-height: var(--touch-target-min); padding: 8px 16px; font-size: 14px;">
+            ⚙️ Modifier la configuration API
+          </button>
+        </div>
+
+        <!-- Skeleton placeholders shown during initial load -->
+        <div class="gallery-grid" id="gallery-skeleton" aria-hidden="true">
+          <div class="skeleton-card">
+            <div class="skeleton-thumbnail"></div>
+            <div class="skeleton-details">
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line date"></div>
+            </div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-thumbnail"></div>
+            <div class="skeleton-details">
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line date"></div>
+            </div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-thumbnail"></div>
+            <div class="skeleton-details">
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line date"></div>
+            </div>
+          </div>
+          <div class="skeleton-card">
+            <div class="skeleton-thumbnail"></div>
+            <div class="skeleton-details">
+              <div class="skeleton-line title"></div>
+              <div class="skeleton-line date"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actual media elements -->
+        <div class="gallery-grid" id="gallery-grid" style="display: none;">
+          <!-- Dynamically populated via app.js -->
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-gallery" id="gallery-empty" style="display: none;">
+          <span class="empty-icon" aria-hidden="true">📁</span>
+          <p class="empty-text">Aucun média trouvé</p>
+          <p>Le dossier Google Drive est actuellement vide ou n'a pas pu être chargé. Utilisez la zone d'importation ci-dessus pour ajouter des fichiers.</p>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Media Popup Modal -->
+  <dialog id="media-modal" class="modal" aria-labelledby="modal-title" aria-modal="true">
+    <div class="modal-content-container">
+      <button class="modal-close-btn" id="modal-close" aria-label="Fermer la vue du média">✕</button>
+      
+      <div class="modal-media-wrapper" id="modal-media-container">
+        <!-- Rendered dynamically (image or iframe video) -->
+      </div>
+      
+      <div class="modal-caption" id="modal-title">
+        Nom du fichier
+      </div>
+    </div>
+  </dialog>
+
+  <!-- PWA Install Popup Banner -->
+  <div id="pwa-install-banner" class="pwa-install-banner" style="display: none;" aria-live="polite">
+    <div class="pwa-install-content">
+      <span class="pwa-install-icon" aria-hidden="true">📸</span>
+      <div class="pwa-install-text-group">
+        <h3 class="pwa-install-title">Installer l'application</h3>
+        <p class="pwa-install-description">Ajoutez Aix en Vue Médias à votre écran d'accueil pour importer vos photos et vidéos encore plus rapidement.</p>
+      </div>
+    </div>
+    <div class="pwa-install-actions">
+      <button id="pwa-install-btn" class="btn btn-primary">Installer</button>
+      <button id="pwa-dismiss-btn" class="btn btn-secondary">Plus tard</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
