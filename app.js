@@ -499,6 +499,7 @@ function renderUploadCard(item) {
 }
 
 // Upload File via XHR for real-time progress
+// Upload File via Fetch to bypass CORS preflight issues
 function uploadFile(item) {
   const reader = new FileReader();
   
@@ -519,17 +520,14 @@ function uploadFile(item) {
       return;
     }
     
-    // Native XHR for Upload Progress bar
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', APPS_SCRIPT_URL, true);
-    xhr.setRequestHeader('Content-Type', 'text/plain'); // Avoid CORS OPTIONS preflight (no charset suffix)
-    
-    // Progress Listener
-    xhr.upload.onprogress = function(event) {
-      if (event.lengthComputable) {
-        const percent = Math.round((event.loaded / event.total) * 100);
-        item.progress = percent;
+    // Simulate progress bar increments since we cannot use xhr.upload.onprogress without triggering CORS preflight
+    let percent = 0;
+    const progressInterval = setInterval(() => {
+      if (percent < 90) {
+        percent += Math.floor(Math.random() * 10) + 2; // Increments by 2-12%
+        if (percent > 90) percent = 90;
         
+        item.progress = percent;
         const progressBar = document.getElementById(`progress-${item.id}`);
         if (progressBar) {
           progressBar.style.width = `${percent}%`;
@@ -540,39 +538,38 @@ function uploadFile(item) {
           statusEl.innerText = `Envoi : ${percent}%`;
         }
       }
-    };
+    }, 250);
     
-    // Success / Error Listener
-    xhr.onload = function() {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const response = JSON.parse(xhr.responseText);
-          if (response.success) {
-            handleUploadSuccess(item, response);
-          } else {
-            handleUploadError(item, response.error || "Erreur interne Apps Script");
-          }
-        } catch (err) {
-          handleUploadError(item, "Impossible de lire la réponse du serveur");
-        }
-      } else {
-        handleUploadError(item, `Code HTTP d'erreur ${xhr.status}`);
+    // Fetch POST as a simple text/plain request to bypass CORS preflight checks completely
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain'
+      },
+      body: JSON.stringify({
+        base64: base64Content,
+        name: item.file.name,
+        mimeType: item.file.type
+      })
+    })
+    .then(response => {
+      clearInterval(progressInterval);
+      if (!response.ok) {
+        throw new Error(`Erreur HTTP : ${response.status}`);
       }
-    };
-    
-    // Error Connection
-    xhr.onerror = function() {
-      handleUploadError(item, "Erreur de connexion internet.");
-    };
-    
-    // Send Payload
-    const payload = JSON.stringify({
-      base64: base64Content,
-      name: item.file.name,
-      mimeType: item.file.type
+      return response.json();
+    })
+    .then(data => {
+      if (data.success) {
+        handleUploadSuccess(item, data);
+      } else {
+        handleUploadError(item, data.error || "Erreur interne Apps Script");
+      }
+    })
+    .catch(err => {
+      clearInterval(progressInterval);
+      handleUploadError(item, err.message || "Erreur de connexion internet.");
     });
-    
-    xhr.send(payload);
   };
   
   reader.onerror = function() {
