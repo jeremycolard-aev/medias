@@ -522,7 +522,7 @@ function uploadFile(item) {
     // Native XHR for Upload Progress bar
     const xhr = new XMLHttpRequest();
     xhr.open('POST', APPS_SCRIPT_URL, true);
-    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8'); // Avoid CORS OPTIONS preflight
+    xhr.setRequestHeader('Content-Type', 'text/plain'); // Avoid CORS OPTIONS preflight (no charset suffix)
     
     // Progress Listener
     xhr.upload.onprogress = function(event) {

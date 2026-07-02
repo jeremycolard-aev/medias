@@ -34,11 +34,7 @@ function doGet(e) {
     success: false, 
     error: "Invalid action. Use ?action=list to retrieve files." 
   }))
-  .setMimeType(ContentService.MimeType.JSON)
-  .setHeaders({
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET"
-  });
+  .setMimeType(ContentService.MimeType.JSON);
 }
 
 /**
@@ -80,22 +76,14 @@ function doPost(e) {
     };
     
     return ContentService.createTextOutput(JSON.stringify(response))
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders({
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "POST"
-      });
+      .setMimeType(ContentService.MimeType.JSON);
       
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ 
       success: false, 
       error: err.toString() 
     }))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeaders({
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "POST"
-    });
+    .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -134,21 +122,13 @@ function listFiles() {
     });
     
     return ContentService.createTextOutput(output)
-      .setMimeType(ContentService.MimeType.JSON)
-      .setHeaders({
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET"
-      });
+      .setMimeType(ContentService.MimeType.JSON);
       
   } catch (err) {
     return ContentService.createTextOutput(JSON.stringify({ 
       success: false, 
       error: err.toString() 
     }))
-    .setMimeType(ContentService.MimeType.JSON)
-    .setHeaders({
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET"
-    });
+    .setMimeType(ContentService.MimeType.JSON);
   }
 }
