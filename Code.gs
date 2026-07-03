@@ -89,7 +89,7 @@ function doPost(e) {
 }
 
 /**
- * Retrieve all files in the folder and sort by date created descending using Advanced Drive Service
+ * Retrieve all files in the folder and sort by date created descending using Advanced Drive Service (v3)
  */
 function listFiles(pageToken) {
   try {
@@ -100,8 +100,9 @@ function listFiles(pageToken) {
     var query = "'" + FOLDER_ID + "' in parents and trashed = false";
     var optionalArgs = {
       q: query,
-      orderBy: "createdDate desc",
-      maxResults: 20
+      orderBy: "createdTime desc",
+      pageSize: 20,
+      fields: "nextPageToken, files(id, name, mimeType, createdTime, size, webViewLink, thumbnailLink)"
     };
     
     if (pageToken) {
@@ -109,18 +110,20 @@ function listFiles(pageToken) {
     }
     
     var response = Drive.Files.list(optionalArgs);
-    var items = response.items || [];
+    
+    // Support pour v2 (items) ou v3 (files) au cas où
+    var items = response.files || response.items || [];
     var result = [];
     
     for (var i = 0; i < items.length; i++) {
       var item = items[i];
       result.push({
         id: item.id,
-        name: item.title,
+        name: item.name || item.title,
         mimeType: item.mimeType,
-        created: new Date(item.createdDate).getTime(),
-        size: item.fileSize,
-        webViewLink: item.alternateLink,
+        created: new Date(item.createdTime || item.createdDate).getTime(),
+        size: item.size || item.fileSize || 0,
+        webViewLink: item.webViewLink || item.alternateLink,
         thumbnailLink: item.thumbnailLink || null
       });
     }
