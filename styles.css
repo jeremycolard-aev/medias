@@ -193,9 +193,10 @@ body {
 }
 
 .floating-btn-group {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
   pointer-events: auto; /* Re-enable clicks for items inside */
 }
 
@@ -230,6 +231,8 @@ body {
 }
 
 .load-more-btn {
+  position: absolute;
+  left: calc(100% + 16px);
   width: 48px;
   height: 48px;
   border-radius: 50%;
