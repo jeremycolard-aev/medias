@@ -19,7 +19,6 @@ const uploadQueueGrid = document.getElementById('upload-queue-grid');
 const galleryGrid = document.getElementById('gallery-grid');
 const gallerySkeleton = document.getElementById('gallery-skeleton');
 const galleryEmpty = document.getElementById('gallery-empty');
-const loadMoreContainer = document.getElementById('load-more-container');
 const loadMoreBtn = document.getElementById('load-more-btn');
 
 // Modal Elements
@@ -215,7 +214,7 @@ function initDemoData() {
 async function loadGallery() {
   galleryGrid.style.display = 'none';
   galleryEmpty.style.display = 'none';
-  loadMoreContainer.style.display = 'none';
+  loadMoreBtn.style.display = 'none';
   gallerySkeleton.style.display = 'grid';
   
   if (!APPS_SCRIPT_URL) {
@@ -268,7 +267,7 @@ function renderGallery() {
   if (!mediaList || mediaList.length === 0) {
     galleryGrid.style.display = 'none';
     galleryEmpty.style.display = 'flex';
-    loadMoreContainer.style.display = 'none';
+    loadMoreBtn.style.display = 'none';
     return;
   }
   
@@ -339,9 +338,9 @@ function renderGallery() {
   
   // Show / Hide Load More
   if (itemsToShow < mediaList.length) {
-    loadMoreContainer.style.display = 'flex';
+    loadMoreBtn.style.display = 'flex';
   } else {
-    loadMoreContainer.style.display = 'none';
+    loadMoreBtn.style.display = 'none';
   }
 }
 

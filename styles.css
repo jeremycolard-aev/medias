@@ -30,7 +30,7 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   min-height: 100vh;
-  padding-bottom: 40px;
+  padding-bottom: 120px; /* Space for bottom floating buttons */
   overflow-y: scroll;
 }
 
@@ -179,37 +179,73 @@ body {
   box-shadow: 2px 2px 0px var(--color-border);
 }
 
-/* Upload Section (Floating Circular Red Plus Button with Black Outline) */
-.upload-section {
+/* Upload & Floating Controls */
+.floating-controls {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 900;
   display: flex;
-  justify-content: center;
   align-items: center;
-  padding: 16px 0 8px 0;
+  justify-content: center;
+  pointer-events: none; /* Allows clicks to pass through container */
+}
+
+.floating-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  pointer-events: auto; /* Re-enable clicks for items inside */
 }
 
 .upload-trigger-container {
   position: relative;
 }
 
-.upload-btn {
+.floating-btn {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  border: 2px solid var(--color-border);
+  border: 2.5px solid var(--color-border);
   cursor: pointer;
   transition: var(--transition);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 3px 3px 0px var(--color-border);
 }
 
-.upload-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(208, 0, 0, 0.25), 3px 3px 0px var(--color-border);
+.camera-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--color-primary);
 }
 
+.camera-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 4px 4px 0px var(--color-border);
+}
+
+.camera-btn svg {
+  stroke: #ffffff;
+}
+
+.load-more-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.load-more-btn:hover {
+  transform: scale(1.05) translateY(-2px);
+  background: var(--color-bg);
+  box-shadow: 4px 4px 0px var(--color-border);
+}
+
+.load-more-btn svg {
+  stroke: var(--color-text);
+}
 
 .file-input {
   display: none;
@@ -438,12 +474,7 @@ body {
   color: #e2dfde;
 }
 
-/* Pagination container */
-.load-more-container {
-  display: flex;
-  justify-content: center;
-  padding: 8px 0;
-}
+/* Removed load-more-container, load-more-btn is now a floating control button */
 
 /* Modal View (Pure Dark Backdrop) */
 .modal {
