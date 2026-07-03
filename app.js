@@ -7,6 +7,7 @@ let APPS_SCRIPT_URL = localStorage.getItem('AEV_APPS_SCRIPT_URL') || 'https://sc
 let mediaList = [];
 let uploadQueue = [];
 let itemsToShow = 10;
+let serverNextPageToken = null;
 let deferredPrompt = null; // PWA installation prompt
 
 // DOM Elements
@@ -89,8 +90,18 @@ function setupEventListeners() {
   
   // Load More Button
   loadMoreBtn.addEventListener('click', () => {
-    itemsToShow += 10;
-    renderGallery();
+    if (APPS_SCRIPT_URL === 'demo') {
+      itemsToShow += 10;
+      renderGallery();
+    } else {
+      const originalText = loadMoreBtn.innerHTML;
+      loadMoreBtn.innerHTML = '<span class="spinner" style="border-width: 2px; width: 16px; height: 16px; display: inline-block;"></span>';
+      loadMoreBtn.disabled = true;
+      loadGallery(true).finally(() => {
+        loadMoreBtn.innerHTML = originalText;
+        loadMoreBtn.disabled = false;
+      });
+    }
   });
   
   // Help Modal Toggle
@@ -211,29 +222,43 @@ function initDemoData() {
 }
 
 // Load Gallery Data
-async function loadGallery() {
-  galleryGrid.style.display = 'none';
-  galleryEmpty.style.display = 'none';
-  loadMoreBtn.style.display = 'none';
-  gallerySkeleton.style.display = 'grid';
+async function loadGallery(isLoadMore = false) {
+  if (!isLoadMore) {
+    galleryGrid.style.display = 'none';
+    galleryEmpty.style.display = 'none';
+    loadMoreBtn.style.display = 'none';
+    gallerySkeleton.style.display = 'grid';
+    serverNextPageToken = null;
+    mediaList = [];
+  }
   
   if (!APPS_SCRIPT_URL) {
-    gallerySkeleton.style.display = 'none';
+    if (!isLoadMore) gallerySkeleton.style.display = 'none';
     showApiConfig(true);
     return;
   }
   
   try {
     if (APPS_SCRIPT_URL === 'demo') {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const demoMedias = JSON.parse(sessionStorage.getItem('AEV_DEMO_MEDIAS') || '[]');
-      mediaList = demoMedias;
-      itemsToShow = 10;
-      renderGallery();
+      if (!isLoadMore) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        const demoMedias = JSON.parse(sessionStorage.getItem('AEV_DEMO_MEDIAS') || '[]');
+        mediaList = demoMedias;
+        itemsToShow = 10;
+        renderGallery();
+      } else {
+        itemsToShow += 10;
+        renderGallery();
+      }
       return;
     }
     
-    const response = await fetch(`${APPS_SCRIPT_URL}?action=list`, {
+    let fetchUrl = `${APPS_SCRIPT_URL}?action=list`;
+    if (isLoadMore && serverNextPageToken) {
+      fetchUrl += `&pageToken=${encodeURIComponent(serverNextPageToken)}`;
+    }
+    
+    const response = await fetch(fetchUrl, {
       method: 'GET',
       mode: 'cors'
     });
@@ -245,22 +270,32 @@ async function loadGallery() {
     const data = await response.json();
     
     if (data.success) {
-      mediaList = data.files || [];
-      itemsToShow = 10;
-      renderGallery();
+      serverNextPageToken = data.nextPageToken || null;
+      if (!isLoadMore) {
+        mediaList = data.files || [];
+        renderGallery();
+      } else {
+        const newFiles = data.files || [];
+        mediaList = mediaList.concat(newFiles);
+        appendGalleryItems(newFiles);
+      }
     } else {
       throw new Error(data.error || "Erreur inconnue");
     }
   } catch (err) {
     console.error("Gallery Load Error:", err);
-    gallerySkeleton.style.display = 'none';
-    alert(`Erreur de chargement : ${err.message}`);
-    showApiConfig(true);
-    galleryEmpty.style.display = 'block';
+    if (!isLoadMore) {
+      gallerySkeleton.style.display = 'none';
+      alert(`Erreur de chargement : ${err.message}`);
+      showApiConfig(true);
+      galleryEmpty.style.display = 'block';
+    } else {
+      alert(`Erreur de chargement : ${err.message}`);
+    }
   }
 }
 
-// Render Gallery with Pagination
+// Render Gallery
 function renderGallery() {
   gallerySkeleton.style.display = 'none';
   
@@ -277,10 +312,14 @@ function renderGallery() {
   // Clear grid
   galleryGrid.innerHTML = '';
   
-  // Slice based on itemsToShow
-  const visibleItems = mediaList.slice(0, itemsToShow);
+  const visibleItems = APPS_SCRIPT_URL === 'demo' ? mediaList.slice(0, itemsToShow) : mediaList;
   
-  visibleItems.forEach(file => {
+  appendGalleryItems(visibleItems, true);
+}
+
+// Append items without clearing (used for Load More)
+function appendGalleryItems(files, isFirstRender = false) {
+  files.forEach(file => {
     const isVideo = file.mimeType.startsWith('video/');
     const card = document.createElement('button');
     card.className = 'media-card';
@@ -336,11 +375,19 @@ function renderGallery() {
     galleryGrid.appendChild(card);
   });
   
-  // Show / Hide Load More
-  if (itemsToShow < mediaList.length) {
-    loadMoreBtn.style.display = 'flex';
+  // Update Load More Button visibility
+  if (APPS_SCRIPT_URL === 'demo') {
+    if (itemsToShow < mediaList.length) {
+      loadMoreBtn.style.display = 'flex';
+    } else {
+      loadMoreBtn.style.display = 'none';
+    }
   } else {
-    loadMoreBtn.style.display = 'none';
+    if (serverNextPageToken) {
+      loadMoreBtn.style.display = 'flex';
+    } else {
+      loadMoreBtn.style.display = 'none';
+    }
   }
 }
 

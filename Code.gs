@@ -25,9 +25,10 @@ var FOLDER_ID = "1HA4N-L7pofxBhIguE8IBeg8q0xkjZb8M";
  */
 function doGet(e) {
   var action = e.parameter.action;
+  var pageToken = e.parameter.pageToken || null;
   
   if (action === "list") {
-    return listFiles();
+    return listFiles(pageToken);
   }
   
   return ContentService.createTextOutput(JSON.stringify({ 
@@ -88,37 +89,46 @@ function doPost(e) {
 }
 
 /**
- * Retrieve all files in the folder and sort by date created descending
+ * Retrieve all files in the folder and sort by date created descending using Advanced Drive Service
  */
-function listFiles() {
+function listFiles(pageToken) {
   try {
-    var folder = DriveApp.getFolderById(FOLDER_ID);
-    var files = folder.getFiles();
+    if (typeof Drive === 'undefined') {
+      throw new Error("L'API 'Advanced Drive Service' n'est pas activée. Allez dans Services > Ajouter Drive API.");
+    }
+    
+    var query = "'" + FOLDER_ID + "' in parents and trashed = false";
+    var optionalArgs = {
+      q: query,
+      orderBy: "createdDate desc",
+      maxResults: 20
+    };
+    
+    if (pageToken) {
+      optionalArgs.pageToken = pageToken;
+    }
+    
+    var response = Drive.Files.list(optionalArgs);
+    var items = response.items || [];
     var result = [];
     
-    while (files.hasNext()) {
-      var file = files.next();
-      var mimeType = file.getMimeType();
-      
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i];
       result.push({
-        id: file.getId(),
-        name: file.getName(),
-        mimeType: mimeType,
-        created: file.getDateCreated().getTime(),
-        size: file.getSize(),
-        webViewLink: file.getUrl(),
-        thumbnailLink: getThumbnailLinkSafe(file.getId())
+        id: item.id,
+        name: item.title,
+        mimeType: item.mimeType,
+        created: new Date(item.createdDate).getTime(),
+        size: item.fileSize,
+        webViewLink: item.alternateLink,
+        thumbnailLink: item.thumbnailLink || null
       });
     }
     
-    // Sort by created timestamp descending (newest first)
-    result.sort(function(a, b) {
-      return b.created - a.created;
-    });
-    
     var output = JSON.stringify({ 
       success: true, 
-      files: result 
+      files: result,
+      nextPageToken: response.nextPageToken || null
     });
     
     return ContentService.createTextOutput(output)
