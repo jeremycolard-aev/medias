@@ -30,7 +30,7 @@ body {
   background-color: var(--color-bg);
   color: var(--color-text);
   min-height: 100vh;
-  padding-bottom: 120px; /* Space for bottom floating buttons */
+  padding-bottom: 150px; /* Space for larger bottom floating buttons */
   overflow-y: scroll;
 }
 
@@ -215,8 +215,8 @@ body {
 }
 
 .camera-btn {
-  width: 72px;
-  height: 72px;
+  width: 90px;
+  height: 90px;
   border-radius: 50%;
   background: var(--color-primary);
 }
@@ -233,8 +233,8 @@ body {
 .load-more-btn {
   position: absolute;
   left: calc(100% + 16px);
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background: var(--color-surface);
   color: var(--color-text);
@@ -684,5 +684,62 @@ body {
 
 .help-actions {
   margin-top: 16px;
+}
+
+/* Modal Navigation Buttons */
+.modal-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 2.5px solid rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  font-size: 36px;
+  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: var(--transition);
+  z-index: 20;
+  user-select: none;
+}
+
+.modal-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
+  transform: translateY(-50%) scale(1.08);
+}
+
+.modal-nav-btn.prev {
+  left: 24px;
+}
+
+.modal-nav-btn.next {
+  right: 24px;
+}
+
+.modal-nav-btn:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 600px) {
+  .modal-nav-btn {
+    width: 46px;
+    height: 46px;
+    font-size: 28px;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.4);
+  }
+  .modal-nav-btn.prev {
+    left: 12px;
+  }
+  .modal-nav-btn.next {
+    right: 12px;
+  }
 }
 

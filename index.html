@@ -78,7 +78,9 @@
   <dialog id="media-modal" class="modal">
     <div class="modal-content-container">
       <button class="modal-close-btn" id="modal-close" aria-label="Fermer">✕</button>
+      <button class="modal-nav-btn prev" id="modal-prev" aria-label="Précédent" disabled>‹</button>
       <div class="modal-media-wrapper" id="modal-media-container"></div>
+      <button class="modal-nav-btn next" id="modal-next" aria-label="Suivant" disabled>›</button>
     </div>
   </dialog>
 
@@ -116,7 +118,7 @@
       <div class="upload-trigger-container">
         <label for="file-picker" class="upload-btn floating-btn camera-btn" aria-label="Prendre ou Importer des photos et vidéos">
           <!-- Camera SVG Icon -->
-          <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
             <circle cx="12" cy="13" r="4"></circle>
           </svg>
@@ -126,7 +128,7 @@
       
       <!-- Load More Button (Down Arrow SVG) -->
       <button id="load-more-btn" class="floating-btn load-more-btn" aria-label="Charger plus de médias" style="display: none;">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"></line>
           <polyline points="19 12 12 19 5 12"></polyline>
         </svg>
