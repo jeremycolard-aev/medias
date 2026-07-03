@@ -71,8 +71,8 @@ function doPost(e) {
       name: file.getName(),
       mimeType: file.getMimeType(),
       created: file.getDateCreated().getTime(),
-      webViewLink: file.getWebViewLink(),
-      thumbnailLink: file.getThumbnailLink()
+      webViewLink: file.getUrl(),
+      thumbnailLink: getThumbnailLinkSafe(file.getId())
     };
     
     return ContentService.createTextOutput(JSON.stringify(response))
@@ -106,8 +106,8 @@ function listFiles() {
         mimeType: mimeType,
         created: file.getDateCreated().getTime(),
         size: file.getSize(),
-        webViewLink: file.getWebViewLink(),
-        thumbnailLink: file.getThumbnailLink()
+        webViewLink: file.getUrl(),
+        thumbnailLink: getThumbnailLinkSafe(file.getId())
       });
     }
     
@@ -131,4 +131,19 @@ function listFiles() {
     }))
     .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+/**
+ * Safely retrieve the thumbnail link using the Advanced Drive Service if enabled.
+ * Returns null if the service is not enabled.
+ */
+function getThumbnailLinkSafe(fileId) {
+  try {
+    if (typeof Drive !== 'undefined') {
+      return Drive.Files.get(fileId).thumbnailLink;
+    }
+  } catch (e) {
+    // Advanced Drive Service is not enabled or failed
+  }
+  return null;
 }
