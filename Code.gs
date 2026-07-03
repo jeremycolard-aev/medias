@@ -1,4 +1,4 @@
-/***
+/**
  * Google Apps Script Backend for Video & Photo Storage App
  * 
  * Target Google Drive Folder:
