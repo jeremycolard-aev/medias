@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aev-media-v2' ;
+const CACHE_NAME = 'aev-media-v3' ;
 const ASSETS = [
   './',
   './index.html',
